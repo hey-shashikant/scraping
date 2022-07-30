@@ -1,0 +1,45 @@
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+
+topics_url = 'https://github.com/topics/'
+response = requests.get(topics_url)
+page_contents = response.text
+doc = BeautifulSoup(page_contents, "html.parser")
+topic_title_tags = doc.find_all('p',
+                      {'class' : 'f3 lh-condensed mb-0 mt-1 Link--primary'})
+topic_desc_tags = doc.find_all('p', 
+                              {'class' : 'f5 color-fg-muted mb-0 mt-1'})
+topic_link_tags = doc.find_all('a', 
+                              {'class' : 'no-underline flex-grow-0'})
+
+topic_titles = []
+for i in range(len(topic_title_tags)):
+    topic_titles.append(topic_title_tags[i].text)
+
+#print(topic_titles[:5])
+
+topic_descs = []
+for i in range(len(topic_desc_tags)):
+    topic_descs.append(topic_desc_tags[i].text.strip())
+#print(topic_descs[:5])  
+
+
+topic_urls = []
+for i in range(len(topic_link_tags)):
+    topic_urls.append('https://github.com' + topic_link_tags[i]['href'])
+#print(topic_urls[:5])
+
+topics_dict = {
+    'title' : topic_titles,
+    'description' : topic_descs,
+    'urls' : topic_urls
+}
+
+#print(topics_dict)
+
+topics_df = pd.DataFrame(topics_dict)
+
+#print(topics_df)
+
+topics_df.to_csv('topics.csv',index = None)
